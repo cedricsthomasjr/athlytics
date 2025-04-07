@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from nba_api.stats.endpoints import playercareerstats
 from nba_api.stats.static import players
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import json
 
 app = Flask(__name__)
@@ -38,6 +40,33 @@ def get_player_name(player_id):
         return jsonify({"name": player["full_name"]})
     else:
         return jsonify({"error": "Player not found"}), 404
+
+# 🏆 Selenium-based Awards Scraper Route
+@app.route("/api/player/<bbref_id>/awards", methods=["GET"])
+def get_player_awards(bbref_id):
+    url = f"https://www.basketball-reference.com/players/{bbref_id[0]}/{bbref_id}.html"
+
+    try:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+
+        driver.implicitly_wait(5)
+
+        awards_elements = driver.find_elements("css selector", "#bling li")
+        awards = [el.text.strip() for el in awards_elements if el.text.strip()]
+
+        driver.quit()
+
+        return jsonify({"awards": awards})
+
+    except Exception as e:
+        print(f"Error scraping awards for {bbref_id}: {e}")
+        return jsonify({"error": "Failed to fetch awards", "awards": []}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
