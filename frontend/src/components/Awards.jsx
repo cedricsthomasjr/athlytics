@@ -17,24 +17,6 @@ import roy from "../assets/roy.png";
 import scoringTitle from "../assets/scoring-title.png";
 import stealsTitle from "../assets/steals-title.png";
 
-// 🧩 Map award keywords to images
-const awardIcons = {
-  "All-Defensive": allDefense,
-  "All-NBA": allNBA,
-  "All-Rookie": allRookie,
-  "All-Star MVP": allStarMVP,
-  "All-Star": allStar,
-  "Assists Title": assistsTitle,
-  "Blocks Title": blocksTitle,
-  Champion: champ,
-  "Defensive Player of the Year": dpoy,
-  MVP: mvp,
-  "NBA 75": nba75,
-  "Rookie of the Year": roy,
-  "Scoring Title": scoringTitle,
-  "Steals Title": stealsTitle,
-};
-
 // 🔍 Helper to find best-match icon
 const getAwardIcon = (awardName) => {
   const normalized = awardName.toLowerCase();
@@ -48,13 +30,17 @@ const getAwardIcon = (awardName) => {
   if (normalized.includes("champ")) return champ;
   if (normalized.includes("mvp") && !normalized.includes("as")) return mvp;
   if (normalized.includes("wcf mvp")) return mvp; // or use a custom one if you have
-  if (normalized.includes("dpoy") || normalized.includes("defensive player"))
+  if (
+    normalized.includes("def. poy") ||
+    normalized.includes("defensive player")
+  )
     return dpoy;
   if (normalized.includes("all-nba")) return allNBA;
   if (normalized.includes("all-rookie")) return allRookie;
   if (normalized.includes("sportsmanship")) return champ; // temporary or custom
   if (normalized.includes("nba 75")) return nba75;
-  if (normalized.includes("rookie")) return roy;
+  if (normalized.includes("roy")) return roy;
+  if (normalized.includes("all-defensive")) return allDefense;
 
   return null;
 };

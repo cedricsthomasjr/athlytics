@@ -13,11 +13,56 @@ const PlayerStatsTable = ({ stats }) => {
       ? "0.0%"
       : (val <= 1 ? (val * 100).toFixed(1) : val.toFixed(1)) + "%";
 
+  const careerHighs = {
+    mpg: Math.max(...stats.map((s) => (s.MIN || 0) / (s.GP || 1))),
+    ppg: Math.max(...stats.map((s) => (s.PTS || 0) / (s.GP || 1))),
+    rpg: Math.max(...stats.map((s) => (s.REB || 0) / (s.GP || 1))),
+    apg: Math.max(...stats.map((s) => (s.AST || 0) / (s.GP || 1))),
+    tsp: Math.max(
+      ...stats.map((s) =>
+        s.FGA + 0.44 * s.FTA > 0 ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA)) : 0
+      )
+    ),
+    pts: Math.max(...stats.map((s) => s.PTS || 0)),
+    reb: Math.max(...stats.map((s) => s.REB || 0)),
+    ast: Math.max(...stats.map((s) => s.AST || 0)),
+    stl: Math.max(...stats.map((s) => s.STL || 0)),
+    blk: Math.max(...stats.map((s) => s.BLK || 0)),
+    usg: Math.max(...stats.map((s) => s.USG_PCT || 0)),
+    tov: Math.max(...stats.map((s) => s.TOV_PCT || 0)),
+    astPct: Math.max(...stats.map((s) => s.AST_PCT || 0)),
+    rebPct: Math.max(...stats.map((s) => s.REB_PCT || 0)),
+    efg: Math.max(
+      ...stats.map((s) => (s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0))
+    ),
+    pts36: Math.max(...stats.map((s) => (s.MIN ? (s.PTS / s.MIN) * 36 : 0))),
+    reb36: Math.max(...stats.map((s) => (s.MIN ? (s.REB / s.MIN) * 36 : 0))),
+    ast36: Math.max(...stats.map((s) => (s.MIN ? (s.AST / s.MIN) * 36 : 0))),
+    stl36: Math.max(...stats.map((s) => (s.MIN ? (s.STL / s.MIN) * 36 : 0))),
+    blk36: Math.max(...stats.map((s) => (s.MIN ? (s.BLK / s.MIN) * 36 : 0))),
+  };
+
+  const highlightIfHigh = (val, high, fixed = 1, isPercent = false) => {
+    const display = isPercent
+      ? `${(val * 100).toFixed(fixed)}%`
+      : val.toFixed(fixed);
+    const isHigh =
+      parseFloat(display) ===
+      parseFloat(isPercent ? (high * 100).toFixed(fixed) : high.toFixed(fixed));
+    return (
+      <td
+        className={`px-4 py-2 ${isHigh ? "text-purple-400 font-semibold" : ""}`}
+      >
+        {display}
+      </td>
+    );
+  };
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <div className="flex items-center space-x-2 mb-4">
-          {["averages", "totals", "nerd"].map((type) => (
+          {["averages", "totals", "nerd", "per36"].map((type) => (
             <button
               key={type}
               onClick={() => setView(type)}
@@ -38,7 +83,6 @@ const PlayerStatsTable = ({ stats }) => {
               <th className="px-4 py-2">Season</th>
               <th className="px-4 py-2">Team</th>
               <th className="px-4 py-2">GP</th>
-
               {view === "averages" && (
                 <>
                   <th className="px-4 py-2">MPG</th>
@@ -48,7 +92,6 @@ const PlayerStatsTable = ({ stats }) => {
                   <th className="px-4 py-2">TS%</th>
                 </>
               )}
-
               {view === "totals" && (
                 <>
                   <th className="px-4 py-2">PTS</th>
@@ -58,7 +101,6 @@ const PlayerStatsTable = ({ stats }) => {
                   <th className="px-4 py-2">BLK</th>
                 </>
               )}
-
               {view === "nerd" && (
                 <>
                   <th className="px-4 py-2">USG%</th>
@@ -68,7 +110,15 @@ const PlayerStatsTable = ({ stats }) => {
                   <th className="px-4 py-2">eFG%</th>
                 </>
               )}
-
+              {view === "per36" && (
+                <>
+                  <th className="px-4 py-2">PTS/36</th>
+                  <th className="px-4 py-2">REB/36</th>
+                  <th className="px-4 py-2">AST/36</th>
+                  <th className="px-4 py-2">STL/36</th>
+                  <th className="px-4 py-2">BLK/36</th>
+                </>
+              )}
               <th className="px-4 py-2">FG%</th>
               <th className="px-4 py-2">3P%</th>
               <th className="px-4 py-2">FT%</th>
@@ -80,9 +130,7 @@ const PlayerStatsTable = ({ stats }) => {
               .map((s) => {
                 const gp = s.GP || 1;
                 const mpg = s.MIN / gp;
-                const ppg = s.PTS / gp;
-                const rpg = s.REB / gp;
-                const apg = s.AST / gp;
+                const minutes = s.MIN || 1;
                 const ts =
                   s.FGA + 0.44 * s.FTA > 0
                     ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA))
@@ -104,31 +152,68 @@ const PlayerStatsTable = ({ stats }) => {
 
                     {view === "averages" && (
                       <>
-                        <td className="px-4 py-2">{mpg.toFixed(1)}</td>
-                        <td className="px-4 py-2">{ppg.toFixed(1)}</td>
-                        <td className="px-4 py-2">{rpg.toFixed(1)}</td>
-                        <td className="px-4 py-2">{apg.toFixed(1)}</td>
-                        <td className="px-4 py-2">{(ts * 100).toFixed(1)}%</td>
+                        {highlightIfHigh(mpg, careerHighs.mpg)}
+                        {highlightIfHigh(s.PTS / gp, careerHighs.ppg)}
+                        {highlightIfHigh(s.REB / gp, careerHighs.rpg)}
+                        {highlightIfHigh(s.AST / gp, careerHighs.apg)}
+                        {highlightIfHigh(ts, careerHighs.tsp, 1, true)}
                       </>
                     )}
-
                     {view === "totals" && (
                       <>
-                        <td className="px-4 py-2">{s.PTS}</td>
-                        <td className="px-4 py-2">{s.REB}</td>
-                        <td className="px-4 py-2">{s.AST}</td>
-                        <td className="px-4 py-2">{s.STL}</td>
-                        <td className="px-4 py-2">{s.BLK}</td>
+                        {highlightIfHigh(s.PTS, careerHighs.pts, 0)}
+                        {highlightIfHigh(s.REB, careerHighs.reb, 0)}
+                        {highlightIfHigh(s.AST, careerHighs.ast, 0)}
+                        {highlightIfHigh(s.STL, careerHighs.stl, 0)}
+                        {highlightIfHigh(s.BLK, careerHighs.blk, 0)}
                       </>
                     )}
-
                     {view === "nerd" && (
                       <>
-                        <td className="px-4 py-2">{safePercent(s.USG_PCT)}</td>
-                        <td className="px-4 py-2">{safePercent(s.TOV_PCT)}</td>
-                        <td className="px-4 py-2">{safePercent(s.AST_PCT)}</td>
-                        <td className="px-4 py-2">{safePercent(s.REB_PCT)}</td>
-                        <td className="px-4 py-2">{efgPct.toFixed(1)}%</td>
+                        {highlightIfHigh(s.USG_PCT, careerHighs.usg, 1, true)}
+                        {highlightIfHigh(s.TOV_PCT, careerHighs.tov, 1, true)}
+                        {highlightIfHigh(
+                          s.AST_PCT,
+                          careerHighs.astPct,
+                          1,
+                          true
+                        )}
+                        {highlightIfHigh(
+                          s.REB_PCT,
+                          careerHighs.rebPct,
+                          1,
+                          true
+                        )}
+                        {highlightIfHigh(
+                          efgPct / 100,
+                          careerHighs.efg,
+                          1,
+                          true
+                        )}
+                      </>
+                    )}
+                    {view === "per36" && (
+                      <>
+                        {highlightIfHigh(
+                          (s.PTS / minutes) * 36,
+                          careerHighs.pts36
+                        )}
+                        {highlightIfHigh(
+                          (s.REB / minutes) * 36,
+                          careerHighs.reb36
+                        )}
+                        {highlightIfHigh(
+                          (s.AST / minutes) * 36,
+                          careerHighs.ast36
+                        )}
+                        {highlightIfHigh(
+                          (s.STL / minutes) * 36,
+                          careerHighs.stl36
+                        )}
+                        {highlightIfHigh(
+                          (s.BLK / minutes) * 36,
+                          careerHighs.blk36
+                        )}
                       </>
                     )}
 
