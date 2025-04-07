@@ -1,0 +1,150 @@
+[
+    {
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "price": 192.53,
+      "change": 1.28,
+      "volume": 89000000
+    },
+    {
+      "symbol": "TSLA",
+      "name": "Tesla Inc.",
+      "price": 810.45,
+      "change": -3.71,
+      "volume": 112000000
+    },
+    {
+      "symbol": "GOOGL",
+      "name": "Alphabet Inc.",
+      "price": 133.1,
+      "change": 0.85,
+      "volume": 45000000
+    },
+    {
+      "symbol": "MSFT",
+      "name": "Microsoft Corporation",
+      "price": 298.12,
+      "change": 0.55,
+      "volume": 23500000
+    },
+    {
+      "symbol": "AMZN",
+      "name": "Amazon.com, Inc.",
+      "price": 3300.12,
+      "change": 2.15,
+      "volume": 30000000
+    },
+    {
+      "symbol": "NFLX",
+      "name": "Netflix Inc.",
+      "price": 615.90,
+      "change": -1.25,
+      "volume": 5000000
+    },
+    {
+      "symbol": "META",
+      "name": "Meta Platforms, Inc.",
+      "price": 345.40,
+      "change": 0.12,
+      "volume": 17000000
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA Corporation",
+      "price": 220.45,
+      "change": 1.65,
+      "volume": 25000000
+    },
+    {
+      "symbol": "AMD",
+      "name": "Advanced Micro Devices, Inc.",
+      "price": 100.65,
+      "change": 2.05,
+      "volume": 35000000
+    },
+    {
+      "symbol": "DIS",
+      "name": "The Walt Disney Company",
+      "price": 180.22,
+      "change": -0.75,
+      "volume": 16000000
+    },
+    {
+      "symbol": "GS",
+      "name": "Goldman Sachs Group Inc.",
+      "price": 360.45,
+      "change": 0.42,
+      "volume": 8000000
+    },
+    {
+      "symbol": "INTC",
+      "name": "Intel Corporation",
+      "price": 52.88,
+      "change": -0.21,
+      "volume": 22000000
+    },
+    {
+      "symbol": "V",
+      "name": "Visa Inc.",
+      "price": 225.65,
+      "change": 1.15,
+      "volume": 15000000
+    },
+    {
+      "symbol": "MA",
+      "name": "Mastercard Incorporated",
+      "price": 360.90,
+      "change": 0.87,
+      "volume": 11000000
+    },
+    {
+      "symbol": "BA",
+      "name": "Boeing Co.",
+      "price": 225.77,
+      "change": 1.35,
+      "volume": 10000000
+    },
+    {
+      "symbol": "XOM",
+      "name": "Exxon Mobil Corporation",
+      "price": 62.85,
+      "change": 0.29,
+      "volume": 28000000
+    },
+    {
+      "symbol": "CVX",
+      "name": "Chevron Corporation",
+      "price": 120.52,
+      "change": 1.01,
+      "volume": 22000000
+    },
+    {
+      "symbol": "WMT",
+      "name": "Walmart Inc.",
+      "price": 145.68,
+      "change": -0.47,
+      "volume": 17000000
+    },
+    {
+      "symbol": "KO",
+      "name": "The Coca-Cola Company",
+      "price": 55.32,
+      "change": 0.13,
+      "volume": 16000000
+    },
+    {
+      "symbol": "PEP",
+      "name": "PepsiCo, Inc.",
+      "price": 163.10,
+      "change": 0.15,
+      "volume": 12000000
+    },
+    {
+      "symbol": "JPM",
+      "name": "JPMorgan Chase & Co.",
+      "price": 157.32,
+      "change": 0.24,
+      "volume": 11000000
+    }
+  ]
+  
