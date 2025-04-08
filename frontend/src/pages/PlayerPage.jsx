@@ -5,6 +5,9 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Awards from "../components/Awards";
 import PlayerName from "../components/PlayerName";
+import PlayerStatChart from "../components/PlayerStatChart";
+import GameLogChart from "../components/GameLogChart";
+import Divider from "../components/Divider";
 
 const PlayerPage = () => {
   const { id } = useParams();
@@ -13,11 +16,10 @@ const PlayerPage = () => {
   const [bbrefId, setBBRefId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔧 Helper to generate bbref ID from full name
   const generateBBRefId = (fullName) => {
     const names = fullName.toLowerCase().split(" ");
-    const first = names[0]; // "lebron"
-    const last = names[names.length - 1]; // "james"
+    const first = names[0];
+    const last = names[names.length - 1];
     const lastPart = last.slice(0, 5).padEnd(5, "x");
     const firstPart = first.slice(0, 2).padEnd(2, "x");
     return `${lastPart}${firstPart}01`;
@@ -60,11 +62,25 @@ const PlayerPage = () => {
         {/* Player Name Header */}
         <PlayerName />
 
+        <Divider />
+
         {/* Player Stats Table */}
         <PlayerStatsTable stats={stats} playerName={playerName} />
 
+        <Divider />
+
+        {/* Per-Season Stat Graphs */}
+        <PlayerStatChart data={stats} />
+
+        <Divider />
+
+        {/* Game Log Graph */}
+        <GameLogChart playerId={id} careerStats={stats} />
+
+        <Divider />
+
         {/* Awards Section */}
-        <div className="mt-10">{bbrefId && <Awards playerId={bbrefId} />}</div>
+        {bbrefId && <Awards playerId={bbrefId} />}
       </main>
 
       <Footer />
