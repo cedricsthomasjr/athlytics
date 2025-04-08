@@ -2,14 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
-  XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
 
-// Stat options
 const GAME_STATS = [
   { key: "PTS", label: "Points", color: "#f43f5e" },
   { key: "AST", label: "Assists", color: "#3b82f6" },
@@ -17,19 +15,12 @@ const GAME_STATS = [
 ];
 
 const GameLogChart = ({ playerId, careerStats = [] }) => {
-  // 🎯 Filter out duplicate teams per season, prefer 'TOT'
   const seasonMap = new Map();
   careerStats.forEach((row) => {
     const seasonId = row.SEASON_ID;
     const team = row.TEAM_ABBREVIATION;
-
-    if (!seasonMap.has(seasonId)) {
-      seasonMap.set(seasonId, row);
-    }
-
-    if (team === "TOT") {
-      seasonMap.set(seasonId, row);
-    }
+    if (!seasonMap.has(seasonId)) seasonMap.set(seasonId, row);
+    if (team === "TOT") seasonMap.set(seasonId, row);
   });
 
   const playedSeasons = Array.from(seasonMap.values())
@@ -43,7 +34,6 @@ const GameLogChart = ({ playerId, careerStats = [] }) => {
 
   useEffect(() => {
     if (!season) return;
-
     const fetchGames = async () => {
       try {
         const res = await fetch(
@@ -55,14 +45,20 @@ const GameLogChart = ({ playerId, careerStats = [] }) => {
         console.error("❌ Failed to fetch game log:", err);
       }
     };
-
     fetchGames();
   }, [playerId, season]);
 
-  const chartData = games.map((game, idx) => ({
-    date: `Game ${idx + 1}`,
-    value: game[activeStat.key] || 0,
-  }));
+  const chartData = games.map((game, idx) => {
+    const isHomeGame = game.MATCHUP.includes("@") ? "Away" : "Home";
+    const opponent = game.MATCHUP.replace("@", "").trim();
+    return {
+      index: idx,
+      date: `Game ${idx + 1} - ${isHomeGame} vs ${opponent}`,
+      value: game[activeStat.key] ? Math.round(game[activeStat.key]) : 0,
+      opponent,
+      result: game.WL === "W" ? "Win" : "Loss",
+    };
+  });
 
   return (
     <div className="w-full bg-zinc-900 rounded-xl p-6 shadow-md mt-10">
@@ -80,7 +76,6 @@ const GameLogChart = ({ playerId, careerStats = [] }) => {
             {stat.label}
           </button>
         ))}
-
         <select
           value={season}
           onChange={(e) => setSeason(e.target.value)}
@@ -106,23 +101,46 @@ const GameLogChart = ({ playerId, careerStats = [] }) => {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis
-              dataKey="date"
-              stroke="#ccc"
-              tickFormatter={(value, index) => {
-                const isStart = index === 0;
-                const isMid = index === Math.floor(chartData.length / 2);
-                const isEnd = index === chartData.length - 1;
 
-                return isStart || isMid || isEnd ? value : "";
-              }}
-            />
-
+            {/* ⛔ XAxis removed */}
             <YAxis stroke="#ccc" />
             <Tooltip
-              contentStyle={{ backgroundColor: "#111", border: "none" }}
+              contentStyle={{
+                backgroundColor: "#111",
+                border: "none",
+                padding: "10px",
+              }}
               labelStyle={{ color: "#fff" }}
-              formatter={(value) => `${value} ${activeStat.label}`}
+              formatter={(value, name, props) => [
+                `${Math.round(value)} ${activeStat.label}`,
+                `Game ${props.payload.index + 1}`,
+              ]}
+              labelFormatter={(label, payload) => {
+                if (!payload || payload.length === 0 || !payload[0]?.payload)
+                  return label;
+
+                const { index, opponent, result } = payload[0].payload;
+
+                return (
+                  <div style={{ color: "#fff", lineHeight: "1.5" }}>
+                    <p style={{ fontWeight: 600 }}>Game {index + 1}</p>
+                    <p>
+                      Opponent:{" "}
+                      <span style={{ color: "#ddd" }}>{opponent}</span>
+                    </p>
+                    <p>
+                      Result:{" "}
+                      <span
+                        style={{
+                          color: result === "Win" ? "#22c55e" : "#f43f5e",
+                        }}
+                      >
+                        {result}
+                      </span>
+                    </p>
+                  </div>
+                );
+              }}
             />
             <Line
               type="monotone"
