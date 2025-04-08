@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from nba_api.stats.endpoints import playercareerstats
 from nba_api.stats.static import players
+from nba_api.stats.endpoints import PlayerGameLog
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -150,6 +151,62 @@ def get_advanced_stats(bbref_id):
     except Exception as e:
         print(f"❌ Fatal error scraping advanced stats: {e}")
         return jsonify({"error": "Failed to fetch advanced stats"}), 500
+
+@app.route("/api/player/<player_id>/games/<season>", methods=["GET"])
+def get_player_games(player_id, season):
+    try:
+        log = PlayerGameLog(player_id=player_id, season=season)
+        df = log.get_data_frames()[0]
+
+        # Only include relevant fields to keep frontend light
+        df = df[[
+            "GAME_DATE", "MATCHUP", "WL", "MIN", "PTS", "REB", "AST",
+            "STL", "BLK", "FGA", "FGM", "FG3A", "FG3M", "FTA", "FTM", "TOV"
+        ]].copy()
+
+        df["GAME_DATE"] = pd.to_datetime(df["GAME_DATE"]).dt.strftime("%b %d")
+
+        return jsonify(df.to_dict(orient="records"))
+
+    except Exception as e:
+        print(f"Error fetching game log for {player_id} in {season}: {e}")
+        return jsonify({"error": "Failed to fetch game data"}), 500
+@app.route("/api/player/<int:player_id>/image", methods=["GET"])
+def get_player_image(player_id):
+    image_url = f"https://cdn.nba.com/headshots/nba/latest/1040x760/{player_id}.png"
+    return jsonify({"image_url": image_url})
+from nba_api.stats.endpoints import commonplayerinfo
+from datetime import datetime
+
+@app.route("/api/player/<int:player_id>/meta", methods=["GET"])
+def get_player_metadata(player_id):
+    try:
+        info = commonplayerinfo.CommonPlayerInfo(player_id=player_id)
+        df = info.get_data_frames()[0]
+
+        player_data = df.iloc[0]
+        birth_date = player_data["BIRTHDATE"]
+        team_name = player_data["TEAM_NAME"]
+        position = player_data["POSITION"]
+        to_year = int(player_data["TO_YEAR"])
+        current_year = datetime.today().year
+        is_active = (current_year - to_year) <= 1
+
+        # Calculate age
+        birth_date = datetime.strptime(birth_date, "%Y-%m-%dT%H:%M:%S")
+        today = datetime.today()
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+        return jsonify({
+            "team": team_name,
+            "position": position,
+            "age": age,
+            "status": "Active" if is_active else "Retired"
+        })
+    except Exception as e:
+        print(f"Error fetching metadata for player {player_id}: {e}")
+        return jsonify({"error": "Metadata not available"}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -17,32 +17,37 @@ import roy from "../assets/roy.png";
 import scoringTitle from "../assets/scoring-title.png";
 import stealsTitle from "../assets/steals-title.png";
 
-// 🔍 Helper to find best-match icon
+// 🔍 Updated helper to support Hall of Fame flag
 const getAwardIcon = (awardName) => {
   const normalized = awardName.toLowerCase();
 
-  if (normalized.includes("all star")) return allStar;
-  if (normalized.includes("as mvp")) return allStarMVP;
-  if (normalized.includes("scoring champ")) return scoringTitle;
-  if (normalized.includes("assist")) return assistsTitle;
-  if (normalized.includes("block")) return blocksTitle;
-  if (normalized.includes("steal")) return stealsTitle;
-  if (normalized.includes("champ")) return champ;
-  if (normalized.includes("mvp") && !normalized.includes("as")) return mvp;
-  if (normalized.includes("wcf mvp")) return mvp; // or use a custom one if you have
+  if (normalized.includes("hall of fame")) {
+    return { icon: null, isHallOfFame: true };
+  }
+
+  if (normalized.includes("all star")) return { icon: allStar };
+  if (normalized.includes("as mvp")) return { icon: allStarMVP };
+  if (normalized.includes("scoring champ")) return { icon: scoringTitle };
+  if (normalized.includes("assist")) return { icon: assistsTitle };
+  if (normalized.includes("block")) return { icon: blocksTitle };
+  if (normalized.includes("steal")) return { icon: stealsTitle };
+  if (normalized.includes("champ")) return { icon: champ };
+  if (normalized.includes("mvp") && !normalized.includes("as"))
+    return { icon: mvp };
+  if (normalized.includes("wcf mvp")) return { icon: mvp };
   if (
     normalized.includes("def. poy") ||
     normalized.includes("defensive player")
   )
-    return dpoy;
-  if (normalized.includes("all-nba")) return allNBA;
-  if (normalized.includes("all-rookie")) return allRookie;
-  if (normalized.includes("sportsmanship")) return champ; // temporary or custom
-  if (normalized.includes("nba 75")) return nba75;
-  if (normalized.includes("roy")) return roy;
-  if (normalized.includes("all-defensive")) return allDefense;
+    return { icon: dpoy };
+  if (normalized.includes("all-nba")) return { icon: allNBA };
+  if (normalized.includes("all-rookie")) return { icon: allRookie };
+  if (normalized.includes("sportsmanship")) return { icon: champ };
+  if (normalized.includes("nba 75")) return { icon: nba75 };
+  if (normalized.includes("roy")) return { icon: roy };
+  if (normalized.includes("all-defensive")) return { icon: allDefense };
 
-  return null;
+  return { icon: null };
 };
 
 const Awards = ({ playerId }) => {
@@ -92,9 +97,10 @@ const Awards = ({ playerId }) => {
         Awards & Accolades
       </h2>
 
-      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm text-gray-300">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
         {awards.map((award, index) => {
-          const icon = getAwardIcon(award);
+          const { icon, isHallOfFame } = getAwardIcon(award);
+
           return (
             <li
               key={index}
@@ -107,7 +113,15 @@ const Awards = ({ playerId }) => {
                   className="w-6 h-6 object-contain"
                 />
               )}
-              <span>{award}</span>
+              <span
+                className={`${
+                  isHallOfFame
+                    ? "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-[0_0_6px_rgba(236,72,153,0.8)]"
+                    : ""
+                }`}
+              >
+                {award}
+              </span>
             </li>
           );
         })}

@@ -4,6 +4,7 @@ import PlayerStatsTable from "../components/PlayerStatsTable";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Awards from "../components/Awards";
+import PlayerName from "../components/PlayerName";
 
 const PlayerPage = () => {
   const { id } = useParams();
@@ -57,9 +58,7 @@ const PlayerPage = () => {
 
       <main className="flex-grow pt-[96px] md:pt-[112px] px-6 md:px-10 pb-10">
         {/* Player Name Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">{playerName}</h1>
-        </div>
+        <PlayerName />
 
         {/* Player Stats Table */}
         <PlayerStatsTable stats={stats} playerName={playerName} />

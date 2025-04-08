@@ -28,18 +28,52 @@ const PlayerStatsTable = ({ stats }) => {
     ast: Math.max(...stats.map((s) => s.AST || 0)),
     stl: Math.max(...stats.map((s) => s.STL || 0)),
     blk: Math.max(...stats.map((s) => s.BLK || 0)),
-    usg: Math.max(...stats.map((s) => s.USG_PCT || 0)),
-    tov: Math.max(...stats.map((s) => s.TOV_PCT || 0)),
-    astPct: Math.max(...stats.map((s) => s.AST_PCT || 0)),
-    rebPct: Math.max(...stats.map((s) => s.REB_PCT || 0)),
+    usg: Math.max(
+      ...stats.map((s) => {
+        const teamMin =
+          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
+        const teamTots =
+          stats.reduce((acc, t) => acc + t.FGA + 0.44 * t.FTA + t.TOV, 0) /
+            stats.length || 1;
+        const val =
+          ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMin) / (s.MIN * teamTots || 1);
+        return isNaN(val) ? 0 : val;
+      })
+    ),
+    tov: Math.max(
+      ...stats.map((s) =>
+        s.FGA + 0.44 * s.FTA + s.TOV > 0
+          ? s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV)
+          : 0
+      )
+    ),
+    astPct: Math.max(
+      ...stats.map((s) => {
+        const teamMin =
+          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
+        const teamFGM = stats.reduce((acc, t) => acc + t.FGM, 0) || 1;
+        const val = s.AST / ((s.MIN / teamMin) * teamFGM - s.FGM || 1);
+        return isNaN(val) ? 0 : val;
+      })
+    ),
+    rebPct: Math.max(
+      ...stats.map((s) => {
+        const teamMin =
+          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
+        const teamREB =
+          stats.reduce((acc, t) => acc + t.REB, 0) / stats.length || 1;
+        const val = (s.REB * teamMin) / (s.MIN * teamREB || 1);
+        return isNaN(val) ? 0 : val;
+      })
+    ),
     efg: Math.max(
       ...stats.map((s) => (s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0))
     ),
     pts36: Math.max(...stats.map((s) => (s.MIN ? (s.PTS / s.MIN) * 36 : 0))),
-    reb36: Math.max(...stats.map((s) => (s.MIN ? (s.REB / s.MIN) * 36 : 0))),
-    ast36: Math.max(...stats.map((s) => (s.MIN ? (s.AST / s.MIN) * 36 : 0))),
-    stl36: Math.max(...stats.map((s) => (s.MIN ? (s.STL / s.MIN) * 36 : 0))),
-    blk36: Math.max(...stats.map((s) => (s.MIN ? (s.BLK / s.MIN) * 36 : 0))),
+    reb36: Math.max(...stats.map((s) => (s.REB / s.MIN) * 36 || 0)),
+    ast36: Math.max(...stats.map((s) => (s.AST / s.MIN) * 36 || 0)),
+    stl36: Math.max(...stats.map((s) => (s.STL / s.MIN) * 36 || 0)),
+    blk36: Math.max(...stats.map((s) => (s.BLK / s.MIN) * 36 || 0)),
   };
 
   const highlightIfHigh = (val, high, fixed = 1, isPercent = false) => {
@@ -138,8 +172,25 @@ const PlayerStatsTable = ({ stats }) => {
                 const fgPct = s.FGA > 0 ? s.FGM / s.FGA : 0;
                 const fg3Pct = s.FG3A > 0 ? s.FG3M / s.FG3A : 0;
                 const ftPct = s.FTA > 0 ? s.FTM / s.FTA : 0;
-                const efgPct =
-                  s.FGA > 0 ? ((s.FGM + 0.5 * s.FG3M) / s.FGA) * 100 : 0;
+                const efgPct = s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0;
+
+                const teamMin =
+                  stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
+                const teamTots =
+                  stats.reduce(
+                    (acc, t) => acc + t.FGA + 0.44 * t.FTA + t.TOV,
+                    0
+                  ) / stats.length || 1;
+                const usgPct =
+                  ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMin) /
+                    (s.MIN * teamTots || 1) || 0;
+                const tovPct = s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV || 1) || 0;
+                const teamFGM = stats.reduce((acc, t) => acc + t.FGM, 0) || 1;
+                const astPct =
+                  s.AST / ((s.MIN / teamMin) * teamFGM - s.FGM || 1) || 0;
+                const teamREB =
+                  stats.reduce((acc, t) => acc + t.REB, 0) / stats.length || 1;
+                const rebPct = (s.REB * teamMin) / (s.MIN * teamREB || 1) || 0;
 
                 return (
                   <tr
@@ -159,6 +210,7 @@ const PlayerStatsTable = ({ stats }) => {
                         {highlightIfHigh(ts, careerHighs.tsp, 1, true)}
                       </>
                     )}
+
                     {view === "totals" && (
                       <>
                         {highlightIfHigh(s.PTS, careerHighs.pts, 0)}
@@ -168,30 +220,17 @@ const PlayerStatsTable = ({ stats }) => {
                         {highlightIfHigh(s.BLK, careerHighs.blk, 0)}
                       </>
                     )}
+
                     {view === "nerd" && (
                       <>
-                        {highlightIfHigh(s.USG_PCT, careerHighs.usg, 1, true)}
-                        {highlightIfHigh(s.TOV_PCT, careerHighs.tov, 1, true)}
-                        {highlightIfHigh(
-                          s.AST_PCT,
-                          careerHighs.astPct,
-                          1,
-                          true
-                        )}
-                        {highlightIfHigh(
-                          s.REB_PCT,
-                          careerHighs.rebPct,
-                          1,
-                          true
-                        )}
-                        {highlightIfHigh(
-                          efgPct / 100,
-                          careerHighs.efg,
-                          1,
-                          true
-                        )}
+                        {highlightIfHigh(usgPct, careerHighs.usg, 1, true)}
+                        {highlightIfHigh(tovPct, careerHighs.tov, 1, true)}
+                        {highlightIfHigh(astPct, careerHighs.astPct, 1, true)}
+                        {highlightIfHigh(rebPct, careerHighs.rebPct, 1, true)}
+                        {highlightIfHigh(efgPct, careerHighs.efg, 1, true)}
                       </>
                     )}
+
                     {view === "per36" && (
                       <>
                         {highlightIfHigh(

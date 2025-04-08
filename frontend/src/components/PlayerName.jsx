@@ -1,57 +1,66 @@
-// src/components/PlayerName.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import PlayerImage from "./PlayerImage";
 
 const PlayerName = () => {
-  const { playerId } = useParams();
+  const { id } = useParams();
   const [playerName, setPlayerName] = useState("");
-  const [yearsText, setYearsText] = useState("");
+  const [meta, setMeta] = useState(null);
 
   useEffect(() => {
-    const fetchNameAndStats = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await fetch(
-          `http://127.0.0.1:5000/api/player-name/${playerId}`
+        const nameRes = await fetch(
+          `http://127.0.0.1:5000/api/player-name/${id}`
         );
-        const data = await res.json();
-        setPlayerName(data.name);
+        const nameData = await nameRes.json();
+        setPlayerName(nameData.name);
 
-        const statsRes = await fetch(
-          `http://127.0.0.1:5000/api/player/${playerId}`
+        const metaRes = await fetch(
+          `http://127.0.0.1:5000/api/player/${id}/meta`
         );
-        const stats = await statsRes.json();
-
-        const totalGP = stats.reduce((sum, s) => sum + (s.GP || 0), 0);
-        const rawYears = totalGP / 82;
-        const roundedYears = Math.round(rawYears);
-
-        const mostRecentSeason = stats[stats.length - 1]?.SEASON_ID || "";
-        const currentYear = new Date().getFullYear();
-        const seasonYear = parseInt(mostRecentSeason.split("-")[0]);
-        const isActive = currentYear - seasonYear <= 1;
-
-        if (roundedYears <= 1) {
-          setYearsText("Rook");
-        } else {
-          setYearsText(
-            isActive
-              ? `${roundedYears} year vet`
-              : `${roundedYears} year retiree`
-          );
-        }
+        const metaData = await metaRes.json();
+        setMeta(metaData);
       } catch (err) {
-        console.error("Failed to fetch player info:", err);
-        setPlayerName("Unknown Player");
+        console.error("Error loading player info:", err);
       }
     };
 
-    fetchNameAndStats();
-  }, [playerId]);
+    fetchAll();
+  }, [id]);
 
   return (
-    <div className="mb-8">
-      <h1 className="text-4xl font-bold text-white">{playerName}</h1>
-      {yearsText && <p className="text-gray-400 text-sm mt-1">{yearsText}</p>}
+    <div className="flex items-center gap-6 px-6 py-6 bg-zinc-900 rounded-2xl shadow-md">
+      <PlayerImage id={id} className="w-28 sm:w-32 lg:w-36" />
+
+      <div className="flex flex-col justify-center">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+          {playerName}
+        </h1>
+
+        {meta && (
+          <div className="flex flex-wrap gap-3 text-sm text-gray-300">
+            <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+              Team: {meta.team}
+            </span>
+            <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+              Position: {meta.position}
+            </span>
+            <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+              Age: {meta.age}
+            </span>
+            <span
+              className={`px-3 py-1 rounded-full font-semibold tracking-wide ${
+                meta.status === "Active"
+                  ? "bg-green-700 text-white"
+                  : "bg-gray-600 text-white"
+              }`}
+            >
+              {meta.status}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
