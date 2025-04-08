@@ -54,9 +54,10 @@ const Hero = () => {
 
   return (
     <section className="min-h-screen flex flex-col justify-center items-center text-center py-20 px-6 bg-black font-sans">
-      <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-500 to-pink-600 animate-gradientText tracking-wide leading-tight mb-8">
-        Stats don't lie.
+      <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 animate-[pulse_4s_ease-in-out_infinite] drop-shadow-[0_0_24px_rgba(236,72,153,0.9)]">
+        Stats don’t lie.
       </h1>
+
       <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
         Let them speak the truth. Our platform brings you real-time insights
         into the stats that matter the most, all in one place.

@@ -8,6 +8,7 @@ import PlayerName from "../components/PlayerName";
 import PlayerStatChart from "../components/PlayerStatChart";
 import GameLogChart from "../components/GameLogChart";
 import Divider from "../components/Divider";
+import { motion } from "framer-motion";
 
 const PlayerPage = () => {
   const { id } = useParams();
@@ -56,34 +57,78 @@ const PlayerPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <Navbar />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Navbar />
+      </motion.div>
 
-      <main className="flex-grow pt-[96px] md:pt-[112px] px-6 md:px-10 pb-10">
+      <main className="flex-grow pt-[96px] md:pt-[112px] px-6 md:px-10 pb-10 space-y-10">
         {/* Player Name Header */}
-        <PlayerName />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <PlayerName />
+        </motion.div>
 
         <Divider />
 
         {/* Player Stats Table */}
-        <PlayerStatsTable stats={stats} playerName={playerName} />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <PlayerStatsTable stats={stats} playerName={playerName} />
+        </motion.div>
 
         <Divider />
 
         {/* Per-Season Stat Graphs */}
-        <PlayerStatChart data={stats} />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <PlayerStatChart data={stats} />
+        </motion.div>
 
         <Divider />
 
         {/* Game Log Graph */}
-        <GameLogChart playerId={id} careerStats={stats} />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <GameLogChart playerId={id} careerStats={stats} />
+        </motion.div>
 
         <Divider />
 
         {/* Awards Section */}
-        {bbrefId && <Awards playerId={bbrefId} />}
+        {bbrefId && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <Awards playerId={bbrefId} />
+          </motion.div>
+        )}
       </main>
 
-      <Footer />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, delay: 0.6 }}
+      >
+        <Footer />
+      </motion.div>
     </div>
   );
 };
