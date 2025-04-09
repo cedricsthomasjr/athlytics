@@ -11,8 +11,9 @@ const PlayerName = () => {
     const fetchAll = async () => {
       try {
         const nameRes = await fetch(
-          `http://127.0.0.1:5000/api/player-name/${id}`
+          `http://127.0.0.1:5000/api/player/${id}/name`
         );
+
         const nameData = await nameRes.json();
         setPlayerName(nameData.name);
 

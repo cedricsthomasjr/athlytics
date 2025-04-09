@@ -6,14 +6,26 @@ module.exports = {
         dark: "#121212",
       },
       fontFamily: {
-        // Adding custom font family 'Inter' here
         sans: ["Poppins", "sans-serif"],
+      },
+      animation: {
+        gradient: "gradient 4s ease infinite",
+      },
+      keyframes: {
+        gradient: {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+        },
       },
     },
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: ["dark"], // Only use the dark theme
+    themes: ["dark"],
     darkTheme: "dark",
   },
 };
