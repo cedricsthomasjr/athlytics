@@ -8,26 +8,18 @@ const PlayerName = () => {
   const [meta, setMeta] = useState(null);
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchPlayerBio = async () => {
       try {
-        const nameRes = await fetch(
-          `http://127.0.0.1:5000/api/player/${id}/name`
-        );
-
-        const nameData = await nameRes.json();
-        setPlayerName(nameData.name);
-
-        const metaRes = await fetch(
-          `http://127.0.0.1:5000/api/player/${id}/meta`
-        );
-        const metaData = await metaRes.json();
-        setMeta(metaData);
+        const res = await fetch(`http://127.0.0.1:5000/api/player-bio/${id}`);
+        const data = await res.json();
+        setPlayerName(data.name);
+        setMeta(data);
       } catch (err) {
-        console.error("Error loading player info:", err);
+        console.error("Error loading player bio:", err);
       }
     };
 
-    fetchAll();
+    fetchPlayerBio();
   }, [id]);
 
   return (
@@ -65,6 +57,15 @@ const PlayerName = () => {
                 }`}
               >
                 {meta.status}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Height: {meta.height}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Weight: {meta.weight}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                College: {meta.college}
               </span>
             </div>
           )}

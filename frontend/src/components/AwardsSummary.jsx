@@ -22,10 +22,10 @@ import stealsTitle from "../assets/steals-title.png";
 const awardImageMap = {
   MVP: mvp,
   "Scoring champ": scoringTitle,
-  "Assists champ": assistsTitle,
-  "Rebounds champ": blocksTitle,
-  "Blocks champ": blocksTitle,
-  "Steals champ": stealsTitle,
+  "AST champ": assistsTitle,
+  "TRB champ": blocksTitle,
+  "BLK champ": blocksTitle,
+  "STL champ": stealsTitle,
   "Def. POY": dpoy,
   ROY: roy,
   "All Star": allStar,
@@ -66,7 +66,7 @@ const AwardsSummary = ({ bbrefId }) => {
 
   return (
     <div className="bg-black text-white rounded-2xl shadow-md p-6 w-full">
-      <h2 className="text-xl font-bold mb-4">🏆 Awards Summary</h2>
+      <h2 className="text-xl font-bold mb-4"> Awards Summary</h2>
 
       {loading ? (
         <div className="text-gray-400 animate-pulse">Loading awards...</div>
@@ -76,7 +76,7 @@ const AwardsSummary = ({ bbrefId }) => {
           <span>Failed to load awards.</span>
         </div>
       ) : awards.length === 0 ? (
-        <div className="text-gray-400">No awards found for this player.</div>
+        <div className="text-white-400">No awards found for this player.</div>
       ) : (
         <ul className="flex flex-wrap gap-3">
           {awards.map((award, idx) => {
