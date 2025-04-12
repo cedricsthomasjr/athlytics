@@ -40,15 +40,6 @@ const PlayerName = () => {
 
           {meta && (
             <div className="flex flex-wrap gap-3 text-sm text-gray-300">
-              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
-                Team: {meta.team}
-              </span>
-              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
-                Position: {meta.position}
-              </span>
-              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
-                Age: {meta.age}
-              </span>
               <span
                 className={`px-3 py-1 rounded-full font-semibold tracking-wide ${
                   meta.status === "Active"
@@ -59,6 +50,15 @@ const PlayerName = () => {
                 {meta.status}
               </span>
               <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Team: {meta.team}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Position: {meta.position}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Age: {meta.age}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
                 Height: {meta.height}
               </span>
               <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
@@ -66,6 +66,12 @@ const PlayerName = () => {
               </span>
               <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
                 College: {meta.college}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Draft Class: Class of {meta.draft_year}
+              </span>
+              <span className="bg-zinc-800/60 px-3 py-1 rounded-full border border-zinc-700 shadow-sm">
+                Drafted: {meta.draft_round} {meta.draft_pick}
               </span>
             </div>
           )}

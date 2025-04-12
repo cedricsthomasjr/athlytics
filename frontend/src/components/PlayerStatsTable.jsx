@@ -13,68 +13,69 @@ const PlayerStatsTable = ({ stats }) => {
       ? "0.0%"
       : (val <= 1 ? (val * 100).toFixed(1) : val.toFixed(1)) + "%";
 
-  const careerHighs = {
-    mpg: Math.max(...stats.map((s) => (s.MIN || 0) / (s.GP || 1))),
-    ppg: Math.max(...stats.map((s) => (s.PTS || 0) / (s.GP || 1))),
-    rpg: Math.max(...stats.map((s) => (s.REB || 0) / (s.GP || 1))),
-    apg: Math.max(...stats.map((s) => (s.AST || 0) / (s.GP || 1))),
-    tsp: Math.max(
-      ...stats.map((s) =>
-        s.FGA + 0.44 * s.FTA > 0 ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA)) : 0
-      )
-    ),
-    pts: Math.max(...stats.map((s) => s.PTS || 0)),
-    reb: Math.max(...stats.map((s) => s.REB || 0)),
-    ast: Math.max(...stats.map((s) => s.AST || 0)),
-    stl: Math.max(...stats.map((s) => s.STL || 0)),
-    blk: Math.max(...stats.map((s) => s.BLK || 0)),
-    usg: Math.max(
-      ...stats.map((s) => {
-        const teamMin =
-          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
-        const teamTots =
-          stats.reduce((acc, t) => acc + t.FGA + 0.44 * t.FTA + t.TOV, 0) /
-            stats.length || 1;
-        const val =
-          ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMin) / (s.MIN * teamTots || 1);
-        return isNaN(val) ? 0 : val;
-      })
-    ),
-    tov: Math.max(
-      ...stats.map((s) =>
-        s.FGA + 0.44 * s.FTA + s.TOV > 0
-          ? s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV)
-          : 0
-      )
-    ),
-    astPct: Math.max(
-      ...stats.map((s) => {
-        const teamMin =
-          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
-        const teamFGM = stats.reduce((acc, t) => acc + t.FGM, 0) || 1;
-        const val = s.AST / ((s.MIN / teamMin) * teamFGM - s.FGM || 1);
-        return isNaN(val) ? 0 : val;
-      })
-    ),
-    rebPct: Math.max(
-      ...stats.map((s) => {
-        const teamMin =
-          stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
-        const teamREB =
-          stats.reduce((acc, t) => acc + t.REB, 0) / stats.length || 1;
-        const val = (s.REB * teamMin) / (s.MIN * teamREB || 1);
-        return isNaN(val) ? 0 : val;
-      })
-    ),
-    efg: Math.max(
-      ...stats.map((s) => (s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0))
-    ),
-    pts36: Math.max(...stats.map((s) => (s.MIN ? (s.PTS / s.MIN) * 36 : 0))),
-    reb36: Math.max(...stats.map((s) => (s.REB / s.MIN) * 36 || 0)),
-    ast36: Math.max(...stats.map((s) => (s.AST / s.MIN) * 36 || 0)),
-    stl36: Math.max(...stats.map((s) => (s.STL / s.MIN) * 36 || 0)),
-    blk36: Math.max(...stats.map((s) => (s.BLK / s.MIN) * 36 || 0)),
+  const calcCareerHighs = () => {
+    const avg = (fn) =>
+      stats.reduce((acc, val) => acc + fn(val), 0) / stats.length || 1;
+
+    const teamMinAvg = avg((t) => t.MIN);
+    const teamFGM = stats.reduce((a, t) => a + t.FGM, 0) || 1;
+    const teamREBAvg = avg((t) => t.REB);
+    const teamTotsAvg = avg((t) => t.FGA + 0.44 * t.FTA + t.TOV);
+
+    return {
+      mpg: Math.max(...stats.map((s) => (s.MIN || 0) / (s.GP || 1))),
+      ppg: Math.max(...stats.map((s) => (s.PTS || 0) / (s.GP || 1))),
+      rpg: Math.max(...stats.map((s) => (s.REB || 0) / (s.GP || 1))),
+      apg: Math.max(...stats.map((s) => (s.AST || 0) / (s.GP || 1))),
+      tsp: Math.max(
+        ...stats.map((s) =>
+          s.FGA + 0.44 * s.FTA > 0 ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA)) : 0
+        )
+      ),
+      pts: Math.max(...stats.map((s) => s.PTS || 0)),
+      reb: Math.max(...stats.map((s) => s.REB || 0)),
+      ast: Math.max(...stats.map((s) => s.AST || 0)),
+      stl: Math.max(...stats.map((s) => s.STL || 0)),
+      blk: Math.max(...stats.map((s) => s.BLK || 0)),
+      usg: Math.max(
+        ...stats.map((s) => {
+          const val =
+            ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMinAvg) /
+            (s.MIN * teamTotsAvg || 1);
+          return isNaN(val) ? 0 : val;
+        })
+      ),
+      tov: Math.max(
+        ...stats.map((s) =>
+          s.FGA + 0.44 * s.FTA + s.TOV > 0
+            ? s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV)
+            : 0
+        )
+      ),
+      astPct: Math.max(
+        ...stats.map((s) => {
+          const val = s.AST / ((s.MIN / teamMinAvg) * teamFGM - s.FGM || 1);
+          return isNaN(val) ? 0 : val;
+        })
+      ),
+      rebPct: Math.max(
+        ...stats.map((s) => {
+          const val = (s.REB * teamMinAvg) / (s.MIN * teamREBAvg || 1);
+          return isNaN(val) ? 0 : val;
+        })
+      ),
+      efg: Math.max(
+        ...stats.map((s) => (s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0))
+      ),
+      pts36: Math.max(...stats.map((s) => (s.MIN ? (s.PTS / s.MIN) * 36 : 0))),
+      reb36: Math.max(...stats.map((s) => (s.REB / s.MIN) * 36 || 0)),
+      ast36: Math.max(...stats.map((s) => (s.AST / s.MIN) * 36 || 0)),
+      stl36: Math.max(...stats.map((s) => (s.STL / s.MIN) * 36 || 0)),
+      blk36: Math.max(...stats.map((s) => (s.BLK / s.MIN) * 36 || 0)),
+    };
   };
+
+  const careerHighs = calcCareerHighs();
 
   const highlightIfHigh = (val, high, fixed = 1, isPercent = false) => {
     const display = isPercent
@@ -85,7 +86,9 @@ const PlayerStatsTable = ({ stats }) => {
       parseFloat(isPercent ? (high * 100).toFixed(fixed) : high.toFixed(fixed));
     return (
       <td
-        className={`px-4 py-2 ${isHigh ? "text-purple-400 font-semibold" : ""}`}
+        className={`px-4 py-2 transition-all duration-300 ease-in-out ${
+          isHigh ? "text-purple-400 font-semibold" : ""
+        }`}
       >
         {display}
       </td>
@@ -93,78 +96,63 @@ const PlayerStatsTable = ({ stats }) => {
   };
 
   return (
-    <div className="w-full">
-      <div className="overflow-x-auto">
-        <div className="flex items-center space-x-2 mb-4">
-          {["averages", "totals", "nerd", "per36"].map((type) => (
-            <button
-              key={type}
-              onClick={() => setView(type)}
-              className={`px-4 py-1 rounded-full text-xs border transition ${
-                view === type
-                  ? "bg-purple-700 text-white border-purple-700"
-                  : "bg-[#1a1a1a] text-gray-400 border-gray-600 hover:bg-gray-800"
-              }`}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </button>
-          ))}
-        </div>
+    <div className="w-full overflow-x-auto text-white">
+      <div className="flex items-center gap-2 mb-4">
+        {["averages", "totals", "per36"].map((type) => (
+          <button
+            key={type}
+            onClick={() => setView(type)}
+            className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 ${
+              view === type
+                ? "bg-purple-700 text-white shadow-md"
+                : "bg-zinc-800 text-gray-400 hover:bg-zinc-700 border border-zinc-600"
+            }`}
+          >
+            {type.charAt(0).toUpperCase() + type.slice(1)}
+          </button>
+        ))}
+      </div>
 
-        <table className="w-full text-xs md:text-sm text-left border border-gray-700">
-          <thead className="bg-[#111111] text-purple-400">
+      <div className="rounded-xl overflow-hidden shadow-md ring-1 ring-zinc-800">
+        <table className="min-w-full divide-y divide-zinc-800 text-sm">
+          <thead className="bg-zinc-900 text-purple-400 uppercase text-xs tracking-wider">
             <tr>
-              <th className="px-4 py-2">Season</th>
-              <th className="px-4 py-2">Team</th>
-              <th className="px-4 py-2">GP</th>
-              {view === "averages" && (
-                <>
-                  <th className="px-4 py-2">MPG</th>
-                  <th className="px-4 py-2">PPG</th>
-                  <th className="px-4 py-2">RPG</th>
-                  <th className="px-4 py-2">APG</th>
-                  <th className="px-4 py-2">TS%</th>
-                </>
-              )}
-              {view === "totals" && (
-                <>
-                  <th className="px-4 py-2">PTS</th>
-                  <th className="px-4 py-2">REB</th>
-                  <th className="px-4 py-2">AST</th>
-                  <th className="px-4 py-2">STL</th>
-                  <th className="px-4 py-2">BLK</th>
-                </>
-              )}
-              {view === "nerd" && (
-                <>
-                  <th className="px-4 py-2">USG%</th>
-                  <th className="px-4 py-2">TOV%</th>
-                  <th className="px-4 py-2">AST%</th>
-                  <th className="px-4 py-2">REB%</th>
-                  <th className="px-4 py-2">eFG%</th>
-                </>
-              )}
-              {view === "per36" && (
-                <>
-                  <th className="px-4 py-2">PTS/36</th>
-                  <th className="px-4 py-2">REB/36</th>
-                  <th className="px-4 py-2">AST/36</th>
-                  <th className="px-4 py-2">STL/36</th>
-                  <th className="px-4 py-2">BLK/36</th>
-                </>
-              )}
-              <th className="px-4 py-2">FG%</th>
-              <th className="px-4 py-2">3P%</th>
-              <th className="px-4 py-2">FT%</th>
+              <th className="px-4 py-3 text-left">Season</th>
+              <th className="px-4 py-3 text-left">Team</th>
+              <th className="px-4 py-3 text-left">GP</th>
+              {view === "averages" &&
+                ["MPG", "PPG", "RPG", "APG", "TS%"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left">
+                    {h}
+                  </th>
+                ))}
+              {view === "totals" &&
+                ["PTS", "REB", "AST", "STL", "BLK"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left">
+                    {h}
+                  </th>
+                ))}
+              {view === "per36" &&
+                ["PTS/36", "REB/36", "AST/36", "STL/36", "BLK/36"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left">
+                    {h}
+                  </th>
+                ))}
+              {["FG%", "3P%", "FT%"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
-          <tbody>
+
+          <tbody className="bg-zinc-950 divide-y divide-zinc-800">
             {[...stats]
               .sort((a, b) => (a.SEASON_ID > b.SEASON_ID ? -1 : 1))
               .map((s) => {
                 const gp = s.GP || 1;
-                const mpg = s.MIN / gp;
                 const minutes = s.MIN || 1;
+                const mpg = s.MIN / gp;
                 const ts =
                   s.FGA + 0.44 * s.FTA > 0
                     ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA))
@@ -172,30 +160,11 @@ const PlayerStatsTable = ({ stats }) => {
                 const fgPct = s.FGA > 0 ? s.FGM / s.FGA : 0;
                 const fg3Pct = s.FG3A > 0 ? s.FG3M / s.FG3A : 0;
                 const ftPct = s.FTA > 0 ? s.FTM / s.FTA : 0;
-                const efgPct = s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0;
-
-                const teamMin =
-                  stats.reduce((acc, t) => acc + t.MIN, 0) / stats.length || 1;
-                const teamTots =
-                  stats.reduce(
-                    (acc, t) => acc + t.FGA + 0.44 * t.FTA + t.TOV,
-                    0
-                  ) / stats.length || 1;
-                const usgPct =
-                  ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMin) /
-                    (s.MIN * teamTots || 1) || 0;
-                const tovPct = s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV || 1) || 0;
-                const teamFGM = stats.reduce((acc, t) => acc + t.FGM, 0) || 1;
-                const astPct =
-                  s.AST / ((s.MIN / teamMin) * teamFGM - s.FGM || 1) || 0;
-                const teamREB =
-                  stats.reduce((acc, t) => acc + t.REB, 0) / stats.length || 1;
-                const rebPct = (s.REB * teamMin) / (s.MIN * teamREB || 1) || 0;
 
                 return (
                   <tr
                     key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}`}
-                    className="border-b border-gray-800 hover:bg-[#1a1a1a]"
+                    className="transition duration-150 hover:bg-zinc-800"
                   >
                     <td className="px-4 py-2">{s.SEASON_ID}</td>
                     <td className="px-4 py-2">{s.TEAM_ABBREVIATION}</td>
@@ -210,7 +179,6 @@ const PlayerStatsTable = ({ stats }) => {
                         {highlightIfHigh(ts, careerHighs.tsp, 1, true)}
                       </>
                     )}
-
                     {view === "totals" && (
                       <>
                         {highlightIfHigh(s.PTS, careerHighs.pts, 0)}
@@ -220,17 +188,6 @@ const PlayerStatsTable = ({ stats }) => {
                         {highlightIfHigh(s.BLK, careerHighs.blk, 0)}
                       </>
                     )}
-
-                    {view === "nerd" && (
-                      <>
-                        {highlightIfHigh(usgPct, careerHighs.usg, 1, true)}
-                        {highlightIfHigh(tovPct, careerHighs.tov, 1, true)}
-                        {highlightIfHigh(astPct, careerHighs.astPct, 1, true)}
-                        {highlightIfHigh(rebPct, careerHighs.rebPct, 1, true)}
-                        {highlightIfHigh(efgPct, careerHighs.efg, 1, true)}
-                      </>
-                    )}
-
                     {view === "per36" && (
                       <>
                         {highlightIfHigh(
@@ -255,7 +212,6 @@ const PlayerStatsTable = ({ stats }) => {
                         )}
                       </>
                     )}
-
                     <td className="px-4 py-2">{safePercent(fgPct)}</td>
                     <td className="px-4 py-2">{safePercent(fg3Pct)}</td>
                     <td className="px-4 py-2">{safePercent(ftPct)}</td>
