@@ -107,7 +107,9 @@ const PlayerPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
+          <Divider />
           <PlayerName />
+          <AwardsSummary bbrefId={bbrefId} />
         </motion.div>
         <Divider />
         <motion.div
@@ -143,9 +145,7 @@ const PlayerPage = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <AwardsSummary bbrefId={bbrefId} />
-          </motion.div>
+          ></motion.div>
         )}
       </main>
 

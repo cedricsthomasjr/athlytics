@@ -24,13 +24,7 @@ const PlayerName = () => {
 
   return (
     <div className="relative z-0">
-      {/* Layer 1: Subtle Pulse Gradient */}
-      <div className="absolute -inset-1 rounded-3xl blur-xl bg-gradient-to-r from-pink-500 via-purple-600 to-fuchsia-500 opacity-30 animate-pulse z-[-1]" />
-
-      {/* Layer 2: Base Glow (refined) */}
-      <div className="absolute -inset-1 rounded-3xl blur-[32px] bg-pink-500 opacity-20 z-[-2]" />
-
-      {/* Main Card */}
+      {/* Main Card (No Pulse) */}
       <div className="flex items-center gap-6 px-6 py-6 bg-zinc-900 rounded-2xl shadow-lg ring-1 ring-zinc-800/60 backdrop-blur-md">
         <PlayerImage id={id} className="w-28 sm:w-32 lg:w-36" />
         <div className="flex flex-col justify-center">

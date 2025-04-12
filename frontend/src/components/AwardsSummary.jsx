@@ -66,8 +66,6 @@ const AwardsSummary = ({ bbrefId }) => {
 
   return (
     <div className="bg-black text-white rounded-2xl shadow-md p-6 w-full">
-      <h2 className="text-xl font-bold mb-4"> Awards Summary</h2>
-
       {loading ? (
         <div className="text-gray-400 animate-pulse">Loading awards...</div>
       ) : hasError ? (
