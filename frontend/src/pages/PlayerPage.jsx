@@ -34,7 +34,7 @@ const generateBBRefId = (fullName) => {
 const PlayerPage = () => {
   const { id } = useParams();
   const [stats, setStats] = useState([]);
-  const [playerName, setPlayerName] = useState("");
+  const [playerBio, setPlayerBio] = useState(null);
   const [bbrefId, setBBRefId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,37 +44,35 @@ const PlayerPage = () => {
         const res = await fetch(`http://127.0.0.1:5000/api/player/${id}`);
         const data = await res.json();
         setStats(data);
-        console.log("📈 Player stats loaded");
+        console.log("📈 Stats data:", data);
 
         const nameRes = await fetch(
-          `http://127.0.0.1:5000/api/player-name/${id}`
+          `http://127.0.0.1:5000/api/player-bio/${id}`
         );
-        console.log("📡 nameRes status:", nameRes.status); // 👈 NEW LOG
-
         const nameData = await nameRes.json();
-        console.log("🧠 nameData:", nameData);
+        console.log("🧠 Bio response:", nameData);
 
-        if (!nameData.name) {
-          console.warn("❌ nameData.name is undefined or null");
+        if (!nameData.DISPLAY_FIRST_LAST) {
+          console.warn("❌ nameData.DISPLAY_FIRST_LAST is undefined or null");
           return;
         }
 
         const manualNameMap = {
-          76003: "Kareem Abdul-Jabbar", // nba_api ID for Kareem
+          76003: "Kareem Abdul-Jabbar",
         };
 
         const manualBBRefMap = {
-          "Kareem Abdul-Jabbar": "abdulka01", // manually correct bbrefId
+          "Kareem Abdul-Jabbar": "abdulka01",
         };
 
-        const correctedName = manualNameMap[id] || nameData.name;
+        const correctedName = manualNameMap[id] || nameData.DISPLAY_FIRST_LAST;
         const manualBBRefId = manualBBRefMap[correctedName];
         const generatedId = manualBBRefId || generateBBRefId(correctedName);
 
-        console.log("🧠 Corrected Name:", correctedName);
-        console.log("🔧 Final bbrefId:", generatedId);
+        console.log("🧾 Final Name:", correctedName);
+        console.log("🆔 Final BBRef ID:", generatedId);
 
-        setPlayerName(correctedName);
+        setPlayerBio(nameData);
         setBBRefId(generatedId);
       } catch (err) {
         console.error("🔥 Error fetching player data:", err);
@@ -84,12 +82,11 @@ const PlayerPage = () => {
     };
 
     fetchPlayer();
-  }, [id]); // ✅ ESLint happy now
+  }, [id]);
 
   if (loading) return <div className="text-white p-10">Loading...</div>;
   if (!stats || stats.length === 0)
     return <div className="text-white p-10">No stats available</div>;
-  console.log("🎯 Passing bbrefId to AwardsSummary:", bbrefId);
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -108,20 +105,27 @@ const PlayerPage = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <Divider />
-          <PlayerName />
-          <AwardsSummary bbrefId={bbrefId} />
+          <PlayerName bio={playerBio} />
+          <Divider />
+          <div className="flex flex-col items-center gap-4 mt-6 mb-8">
+            <h1 className="text-2xl font-bold text-center">Awards Summary</h1>
+            <AwardsSummary bbrefId={bbrefId} />
+          </div>
         </motion.div>
+
         <Divider />
+
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <h1 className="text-2xl font-bold mb-4">Career Table</h1>
-
-          <PlayerStatsTable stats={stats} playerName={playerName} />
+          <PlayerStatsTable stats={stats} playerBio={playerBio} />
         </motion.div>
+
         <Divider />
+
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,7 +134,9 @@ const PlayerPage = () => {
           <h1 className="text-2xl font-bold mb-4">Career Graph</h1>
           <PlayerStatChart data={stats} />
         </motion.div>
+
         <Divider />
+
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -139,13 +145,15 @@ const PlayerPage = () => {
           <h1 className="text-2xl font-bold mb-4">Season Graph</h1>
           <GameLogChart playerId={id} careerStats={stats} />
         </motion.div>
+
         <Divider />
+
         {bbrefId && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-          ></motion.div>
+          />
         )}
       </main>
 
