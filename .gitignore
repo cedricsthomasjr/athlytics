@@ -1,0 +1,50 @@
+# 🔥 Node / React frontend
+frontend/node_modules/
+frontend/.env
+frontend/.next/
+frontend/dist/
+frontend/build/
+frontend/.DS_Store
+
+# 📦 Python / Flask backend
+backend/__pycache__/
+backend/venv/
+backend/.DS_Store
+*.pyc
+*.pyo
+*.pyd
+
+# 🧠 Selenium / scraped or cached data
+backend/cached_awards_json/
+backend/flask_cache/
+backend/cachedplayers.txt
+*.log
+
+# 📄 Dev tools / IDE files
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+.DS_Store
+.vscode/
+.idea/
+.env
+.env.*
+
+# 📦 OS & system junk
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# 📊 Outputs
+tree.txt
+*.zip
+*.tar.gz
+*.csv
+*.db
+
+# 🚫 Specific known project files (cached .json dumps)
+adv.json
+adv2.json
+cavs.json
