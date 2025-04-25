@@ -6,6 +6,8 @@ from .game_logs import logs_bp
 from .metadata import meta_bp
 from .player_bios import player_bios_bp
 from .advanced_stats import adv_bp
+from .team_stats import team_bp
+from .combined_stats import combined_bp
 def register_blueprints(app):
     app.register_blueprint(search_bp)
     app.register_blueprint(player_bp)
@@ -14,3 +16,5 @@ def register_blueprints(app):
     app.register_blueprint(meta_bp)
     app.register_blueprint(player_bios_bp)
     app.register_blueprint(adv_bp)
+    app.register_blueprint(team_bp)
+    app.register_blueprint(combined_bp)

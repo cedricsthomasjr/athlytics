@@ -1,38 +1,41 @@
 from flask import Blueprint, jsonify
 from nba_api.stats.endpoints import playerdashboardbyyearoveryear
-from cache import cache
 
-adv_bp = Blueprint("advanced_stats", __name__, url_prefix="/api")
+adv_bp = Blueprint("adv_bp", __name__)
 
-@adv_bp.route("/player/<int:player_id>/advanced", methods=["GET"])
-@cache.cached()
+@adv_bp.route("/api/player/<int:player_id>/advanced", methods=["GET"])
 def get_advanced_stats(player_id):
     try:
-        data = playerdashboardbyyearoveryear.PlayerDashboardByYearOverYear(
+        response = playerdashboardbyyearoveryear.PlayerDashboardByYearOverYear(
             player_id=player_id,
-            per_mode_detailed="Per100Possessions"
+            measure_type_detailed="Advanced",
+            per_mode_detailed="PerGame",
+            season_type_playoffs="Regular Season"  # ✅ yes this is the correct param
         )
 
-        df = data.get_data_frames()[0]
+        data = response.get_normalized_dict()
+        raw = data.get("ByYearPlayerDashboard", [])
 
-        # Keep only relevant advanced metrics
-        selected = df[
-            [
-                "GROUP_VALUE",     # Season
-                "USG_PCT",         # Usage %
-                "TS_PCT",          # True Shooting %
-                "EFG_PCT",         # Effective FG %
-                "OFF_RATING",      # Offensive Rating
-                "DEF_RATING",      # Defensive Rating
-                "NET_RATING",      # Net Rating
-                "PACE",            # Team Pace
-                "AST_PCT",         # Assist %
-                "REB_PCT",         # Rebound %
-                "TO_PCT",          # Turnover %
-            ]
-        ].fillna(0)
+        advanced = [
+            {
+                "season": r["GROUP_VALUE"],
+                "team": r["TEAM_ABBREVIATION"],
+                "gp": r["GP"],
+                "usg_pct": r.get("USG_PCT"),
+                "ts_pct": r.get("TS_PCT"),
+                "efg_pct": r.get("EFG_PCT"),
+                "off_rating": r.get("OFF_RATING"),
+                "def_rating": r.get("DEF_RATING"),
+                "net_rating": r.get("NET_RATING"),
+                "pace": r.get("PACE"),
+                "ast_pct": r.get("AST_PCT"),
+                "reb_pct": r.get("REB_PCT"),
+                "to_pct": r.get("TO_PCT")
+            }
+            for r in raw
+        ]
 
-        return jsonify(selected.to_dict(orient="records"))
+        return jsonify(advanced)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

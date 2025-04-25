@@ -41,7 +41,9 @@ const PlayerPage = () => {
   useEffect(() => {
     const fetchPlayer = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/api/player/${id}`);
+        const res = await fetch(
+          `http://127.0.0.1:5000/api/player/${id}/combined`
+        );
         const data = await res.json();
         setStats(data);
         console.log("📈 Stats data:", data);
@@ -104,7 +106,6 @@ const PlayerPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <Divider />
           <PlayerName bio={playerBio} />
           <Divider />
           <div className="flex flex-col items-center gap-4 mt-6 mb-8">
@@ -121,7 +122,7 @@ const PlayerPage = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <h1 className="text-2xl font-bold mb-4">Career Table</h1>
-          <PlayerStatsTable stats={stats} playerBio={playerBio} />
+          <PlayerStatsTable stats={stats} />
         </motion.div>
 
         <Divider />

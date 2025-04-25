@@ -1,223 +1,135 @@
-// src/components/PlayerStatsTable.jsx
 import React, { useState } from "react";
 
 const PlayerStatsTable = ({ stats }) => {
-  const [view, setView] = useState("averages");
+  const [view, setView] = useState("normal");
 
   if (!stats || stats.length === 0) {
     return <div className="text-white p-10">No stats available</div>;
   }
 
-  const safePercent = (val) =>
-    isNaN(val) || val === null
-      ? "0.0%"
-      : (val <= 1 ? (val * 100).toFixed(1) : val.toFixed(1)) + "%";
+  // 🔍 Prefer "TOT" if available for a season
+  const filteredStats = Object.values(
+    stats.reduce((acc, row) => {
+      const season = row.GROUP_VALUE || row.SEASON_ID;
+      if (!acc[season] || row.TEAM_ABBREVIATION === "TOT") {
+        acc[season] = row;
+      }
+      return acc;
+    }, {})
+  );
 
-  const calcCareerHighs = () => {
-    const avg = (fn) =>
-      stats.reduce((acc, val) => acc + fn(val), 0) / stats.length || 1;
+  const formatPercent = (val) =>
+    isNaN(val) || val === null ? "—" : (val * 100).toFixed(1) + "%";
+  const formatDecimal = (val) =>
+    isNaN(val) || val === null ? "—" : val.toFixed(1);
+  const formatRank = (val) => (isNaN(val) || val === null ? "—" : `#${val}`);
 
-    const teamMinAvg = avg((t) => t.MIN);
-    const teamFGM = stats.reduce((a, t) => a + t.FGM, 0) || 1;
-    const teamREBAvg = avg((t) => t.REB);
-    const teamTotsAvg = avg((t) => t.FGA + 0.44 * t.FTA + t.TOV);
-
-    return {
-      mpg: Math.max(...stats.map((s) => (s.MIN || 0) / (s.GP || 1))),
-      ppg: Math.max(...stats.map((s) => (s.PTS || 0) / (s.GP || 1))),
-      rpg: Math.max(...stats.map((s) => (s.REB || 0) / (s.GP || 1))),
-      apg: Math.max(...stats.map((s) => (s.AST || 0) / (s.GP || 1))),
-      tsp: Math.max(
-        ...stats.map((s) =>
-          s.FGA + 0.44 * s.FTA > 0 ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA)) : 0
-        )
-      ),
-      pts: Math.max(...stats.map((s) => s.PTS || 0)),
-      reb: Math.max(...stats.map((s) => s.REB || 0)),
-      ast: Math.max(...stats.map((s) => s.AST || 0)),
-      stl: Math.max(...stats.map((s) => s.STL || 0)),
-      blk: Math.max(...stats.map((s) => s.BLK || 0)),
-      usg: Math.max(
-        ...stats.map((s) => {
-          const val =
-            ((s.FGA + 0.44 * s.FTA + s.TOV) * teamMinAvg) /
-            (s.MIN * teamTotsAvg || 1);
-          return isNaN(val) ? 0 : val;
-        })
-      ),
-      tov: Math.max(
-        ...stats.map((s) =>
-          s.FGA + 0.44 * s.FTA + s.TOV > 0
-            ? s.TOV / (s.FGA + 0.44 * s.FTA + s.TOV)
-            : 0
-        )
-      ),
-      astPct: Math.max(
-        ...stats.map((s) => {
-          const val = s.AST / ((s.MIN / teamMinAvg) * teamFGM - s.FGM || 1);
-          return isNaN(val) ? 0 : val;
-        })
-      ),
-      rebPct: Math.max(
-        ...stats.map((s) => {
-          const val = (s.REB * teamMinAvg) / (s.MIN * teamREBAvg || 1);
-          return isNaN(val) ? 0 : val;
-        })
-      ),
-      efg: Math.max(
-        ...stats.map((s) => (s.FGA > 0 ? (s.FGM + 0.5 * s.FG3M) / s.FGA : 0))
-      ),
-      pts36: Math.max(...stats.map((s) => (s.MIN ? (s.PTS / s.MIN) * 36 : 0))),
-      reb36: Math.max(...stats.map((s) => (s.REB / s.MIN) * 36 || 0)),
-      ast36: Math.max(...stats.map((s) => (s.AST / s.MIN) * 36 || 0)),
-      stl36: Math.max(...stats.map((s) => (s.STL / s.MIN) * 36 || 0)),
-      blk36: Math.max(...stats.map((s) => (s.BLK / s.MIN) * 36 || 0)),
-    };
+  const statGroups = {
+    normal: [
+      { label: "Season", key: "GROUP_VALUE" },
+      { label: "Team", key: "TEAM_ABBREVIATION" },
+      { label: "GP", key: "GP" },
+      { label: "MIN", key: "MIN" },
+      { label: "PTS", key: "PTS" },
+      { label: "AST", key: "AST" },
+      { label: "REB", key: "REB" },
+      { label: "STL", key: "STL" },
+      { label: "BLK", key: "BLK" },
+      { label: "TOV", key: "TOV" },
+      { label: "FG%", key: "FG_PCT", isPercent: true },
+      { label: "3P%", key: "FG3_PCT", isPercent: true },
+      { label: "FT%", key: "FT_PCT", isPercent: true },
+    ],
+    advanced: [
+      { label: "Season", key: "GROUP_VALUE" },
+      { label: "Team", key: "TEAM_ABBREVIATION" },
+      { label: "USG%", key: "USG_PCT", isPercent: true },
+      { label: "TS%", key: "TS_PCT", isPercent: true },
+      { label: "EFG%", key: "EFG_PCT", isPercent: true },
+      { label: "OFF RTG", key: "OFF_RATING", isDecimal: true },
+      { label: "DEF RTG", key: "DEF_RATING", isDecimal: true },
+      { label: "NET RTG", key: "NET_RATING", isDecimal: true },
+      { label: "PACE", key: "PACE", isDecimal: true },
+      { label: "AST%", key: "AST_PCT", isPercent: true },
+      { label: "REB%", key: "REB_PCT", isPercent: true },
+      { label: "TO%", key: "TO_PCT", isPercent: true },
+      { label: "PIE", key: "PIE", isDecimal: true },
+    ],
+    rankings: [
+      { label: "Season", key: "GROUP_VALUE" },
+      { label: "Team", key: "TEAM_ABBREVIATION" },
+      { label: "PTS Rank", key: "PTS_RANK", isRank: true },
+      { label: "AST Rank", key: "AST_RANK", isRank: true },
+      { label: "REB Rank", key: "REB_RANK", isRank: true },
+      { label: "TS% Rank", key: "TS_PCT_RANK", isRank: true },
+      { label: "EFG% Rank", key: "EFG_PCT_RANK", isRank: true },
+      { label: "USG% Rank", key: "USG_PCT_RANK", isRank: true },
+      { label: "OFF RTG Rank", key: "OFF_RATING_RANK", isRank: true },
+      { label: "DEF RTG Rank", key: "DEF_RATING_RANK", isRank: true },
+      { label: "NET RTG Rank", key: "NET_RATING_RANK", isRank: true },
+      { label: "AST% Rank", key: "AST_PCT_RANK", isRank: true },
+      { label: "REB% Rank", key: "REB_PCT_RANK", isRank: true },
+      { label: "TO% Rank", key: "TO_PCT_RANK", isRank: true },
+    ],
   };
 
-  const careerHighs = calcCareerHighs();
-
-  const highlightIfHigh = (val, high, fixed = 1, isPercent = false) => {
-    const display = isPercent
-      ? `${(val * 100).toFixed(fixed)}%`
-      : val.toFixed(fixed);
-    const isHigh =
-      parseFloat(display) ===
-      parseFloat(isPercent ? (high * 100).toFixed(fixed) : high.toFixed(fixed));
-    return (
-      <td
-        className={`px-4 py-2 transition-all duration-300 ease-in-out ${
-          isHigh ? "text-purple-400 font-semibold" : ""
-        }`}
-      >
-        {display}
-      </td>
-    );
-  };
+  const activeStats = statGroups[view];
 
   return (
-    <div className="w-full overflow-x-auto text-white">
-      <div className="flex items-center gap-2 mb-4">
-        {["averages", "totals", "per36"].map((type) => (
+    <div className="w-full bg-zinc-900 rounded-xl p-6 shadow-md">
+      <div className="flex justify-center gap-3 mb-6">
+        {["normal", "advanced", "rankings"].map((option) => (
           <button
-            key={type}
-            onClick={() => setView(type)}
-            className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 ${
-              view === type
-                ? "bg-purple-700 text-white shadow-md"
-                : "bg-zinc-800 text-gray-400 hover:bg-zinc-700 border border-zinc-600"
+            key={option}
+            onClick={() => setView(option)}
+            className={`px-4 py-2 rounded-full capitalize text-sm ${
+              view === option
+                ? "bg-white text-black font-bold"
+                : "bg-zinc-800 text-white hover:bg-zinc-700"
             }`}
           >
-            {type.charAt(0).toUpperCase() + type.slice(1)}
+            {option}
           </button>
         ))}
       </div>
 
-      <div className="rounded-xl overflow-hidden shadow-md ring-1 ring-zinc-800">
-        <table className="min-w-full divide-y divide-zinc-800 text-sm">
-          <thead className="bg-zinc-900 text-purple-400 uppercase text-xs tracking-wider">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left text-white border-collapse">
+          <thead className="bg-zinc-800 text-xs uppercase">
             <tr>
-              <th className="px-4 py-3 text-left">Season</th>
-              <th className="px-4 py-3 text-left">Team</th>
-              <th className="px-4 py-3 text-left">GP</th>
-              {view === "averages" &&
-                ["MPG", "PPG", "RPG", "APG", "TS%"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left">
-                    {h}
-                  </th>
-                ))}
-              {view === "totals" &&
-                ["PTS", "REB", "AST", "STL", "BLK"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left">
-                    {h}
-                  </th>
-                ))}
-              {view === "per36" &&
-                ["PTS/36", "REB/36", "AST/36", "STL/36", "BLK/36"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left">
-                    {h}
-                  </th>
-                ))}
-              {["FG%", "3P%", "FT%"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left">
-                  {h}
+              {activeStats.map((col) => (
+                <th key={col.key} className="px-4 py-3 whitespace-nowrap">
+                  {col.label}
                 </th>
               ))}
             </tr>
           </thead>
+          <tbody>
+            {filteredStats.map((row, i) => (
+              <tr
+                key={i}
+                className={`${
+                  i % 2 === 0 ? "bg-zinc-950" : "bg-zinc-900"
+                } hover:bg-zinc-800 transition`}
+              >
+                {activeStats.map((col) => {
+                  const raw = row[col.key];
+                  const val = col.isPercent
+                    ? formatPercent(raw)
+                    : col.isDecimal
+                    ? formatDecimal(raw)
+                    : col.isRank
+                    ? formatRank(raw)
+                    : raw ?? "—";
 
-          <tbody className="bg-zinc-950 divide-y divide-zinc-800">
-            {[...stats]
-              .sort((a, b) => (a.SEASON_ID > b.SEASON_ID ? -1 : 1))
-              .map((s) => {
-                const gp = s.GP || 1;
-                const minutes = s.MIN || 1;
-                const mpg = s.MIN / gp;
-                const ts =
-                  s.FGA + 0.44 * s.FTA > 0
-                    ? s.PTS / (2 * (s.FGA + 0.44 * s.FTA))
-                    : 0;
-                const fgPct = s.FGA > 0 ? s.FGM / s.FGA : 0;
-                const fg3Pct = s.FG3A > 0 ? s.FG3M / s.FG3A : 0;
-                const ftPct = s.FTA > 0 ? s.FTM / s.FTA : 0;
-
-                return (
-                  <tr
-                    key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}`}
-                    className="transition duration-150 hover:bg-zinc-800"
-                  >
-                    <td className="px-4 py-2">{s.SEASON_ID}</td>
-                    <td className="px-4 py-2">{s.TEAM_ABBREVIATION}</td>
-                    <td className="px-4 py-2">{gp}</td>
-
-                    {view === "averages" && (
-                      <>
-                        {highlightIfHigh(mpg, careerHighs.mpg)}
-                        {highlightIfHigh(s.PTS / gp, careerHighs.ppg)}
-                        {highlightIfHigh(s.REB / gp, careerHighs.rpg)}
-                        {highlightIfHigh(s.AST / gp, careerHighs.apg)}
-                        {highlightIfHigh(ts, careerHighs.tsp, 1, true)}
-                      </>
-                    )}
-                    {view === "totals" && (
-                      <>
-                        {highlightIfHigh(s.PTS, careerHighs.pts, 0)}
-                        {highlightIfHigh(s.REB, careerHighs.reb, 0)}
-                        {highlightIfHigh(s.AST, careerHighs.ast, 0)}
-                        {highlightIfHigh(s.STL, careerHighs.stl, 0)}
-                        {highlightIfHigh(s.BLK, careerHighs.blk, 0)}
-                      </>
-                    )}
-                    {view === "per36" && (
-                      <>
-                        {highlightIfHigh(
-                          (s.PTS / minutes) * 36,
-                          careerHighs.pts36
-                        )}
-                        {highlightIfHigh(
-                          (s.REB / minutes) * 36,
-                          careerHighs.reb36
-                        )}
-                        {highlightIfHigh(
-                          (s.AST / minutes) * 36,
-                          careerHighs.ast36
-                        )}
-                        {highlightIfHigh(
-                          (s.STL / minutes) * 36,
-                          careerHighs.stl36
-                        )}
-                        {highlightIfHigh(
-                          (s.BLK / minutes) * 36,
-                          careerHighs.blk36
-                        )}
-                      </>
-                    )}
-                    <td className="px-4 py-2">{safePercent(fgPct)}</td>
-                    <td className="px-4 py-2">{safePercent(fg3Pct)}</td>
-                    <td className="px-4 py-2">{safePercent(ftPct)}</td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <td key={col.key} className="px-4 py-2 whitespace-nowrap">
+                      {val}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
