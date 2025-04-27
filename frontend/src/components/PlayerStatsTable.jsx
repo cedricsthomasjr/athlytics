@@ -18,24 +18,57 @@ const PlayerStatsTable = ({ stats }) => {
     }, {})
   );
 
+  // 👑 Define stat keys for leader highlights by view
+  const leaderKeys = {
+    normal: ["PTS", "AST", "REB", "STL", "BLK"],
+    advanced: ["USG_PCT", "TS_PCT", "EFG_PCT", "PIE"],
+    rankings: [
+      "PTS_RANK",
+      "AST_RANK",
+      "REB_RANK",
+      "TS_PCT_RANK",
+      "EFG_PCT_RANK",
+    ],
+  };
+
+  // Find leaders dynamically
+  const leaders = {};
+  Object.keys(leaderKeys).forEach((group) => {
+    leaderKeys[group].forEach((key) => {
+      if (group === "rankings") {
+        // Lower is better in rankings
+        leaders[key] = Math.min(
+          ...filteredStats.map((s) => s[key] ?? Infinity)
+        );
+      } else {
+        // Higher is better in normal/advanced
+        leaders[key] = Math.max(
+          ...filteredStats.map((s) => s[key] ?? -Infinity)
+        );
+      }
+    });
+  });
+
   const formatPercent = (val) =>
     isNaN(val) || val === null ? "—" : (val * 100).toFixed(1) + "%";
   const formatDecimal = (val) =>
     isNaN(val) || val === null ? "—" : val.toFixed(1);
   const formatRank = (val) => (isNaN(val) || val === null ? "—" : `#${val}`);
+  const formatInteger = (val) =>
+    isNaN(val) || val === null ? "—" : Math.round(val);
 
   const statGroups = {
     normal: [
       { label: "Season", key: "GROUP_VALUE" },
       { label: "Team", key: "TEAM_ABBREVIATION" },
-      { label: "GP", key: "GP" },
-      { label: "MIN", key: "MIN" },
-      { label: "PTS", key: "PTS" },
-      { label: "AST", key: "AST" },
-      { label: "REB", key: "REB" },
-      { label: "STL", key: "STL" },
-      { label: "BLK", key: "BLK" },
-      { label: "TOV", key: "TOV" },
+      { label: "GP", key: "GP", isInteger: true },
+      { label: "MIN", key: "MIN", isDecimal: true },
+      { label: "PTS", key: "PTS", isDecimal: true },
+      { label: "AST", key: "AST", isDecimal: true },
+      { label: "REB", key: "REB", isDecimal: true },
+      { label: "STL", key: "STL", isDecimal: true },
+      { label: "BLK", key: "BLK", isDecimal: true },
+      { label: "TOV", key: "TOV", isDecimal: true },
       { label: "FG%", key: "FG_PCT", isPercent: true },
       { label: "3P%", key: "FG3_PCT", isPercent: true },
       { label: "FT%", key: "FT_PCT", isPercent: true },
@@ -76,16 +109,16 @@ const PlayerStatsTable = ({ stats }) => {
   const activeStats = statGroups[view];
 
   return (
-    <div className="w-full bg-zinc-900 rounded-xl p-6 shadow-md">
+    <div className="w-full bg-zinc-900 rounded-2xl p-6 shadow-md">
       <div className="flex justify-center gap-3 mb-6">
         {["normal", "advanced", "rankings"].map((option) => (
           <button
             key={option}
             onClick={() => setView(option)}
-            className={`px-4 py-2 rounded-full capitalize text-sm ${
+            className={`px-4 py-1 rounded-full capitalize text-sm ${
               view === option
-                ? "bg-white text-black font-bold"
-                : "bg-zinc-800 text-white hover:bg-zinc-700"
+                ? "bg-purple-500 text-white font-bold"
+                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
             }`}
           >
             {option}
@@ -114,16 +147,28 @@ const PlayerStatsTable = ({ stats }) => {
               >
                 {activeStats.map((col) => {
                   const raw = row[col.key];
-                  const val = col.isPercent
-                    ? formatPercent(raw)
-                    : col.isDecimal
-                    ? formatDecimal(raw)
-                    : col.isRank
-                    ? formatRank(raw)
-                    : raw ?? "—";
+                  let val = "—";
+                  if (col.isPercent) val = formatPercent(raw);
+                  else if (col.isDecimal) val = formatDecimal(raw);
+                  else if (col.isRank) val = formatRank(raw);
+                  else if (col.isInteger) val = formatInteger(raw);
+                  else val = raw ?? "—";
+
+                  const highlightKey = leaderKeys[view]?.includes(col.key);
+                  const isLeader =
+                    highlightKey &&
+                    ((view === "rankings" &&
+                      parseInt(raw) === leaders[col.key]) ||
+                      (view !== "rankings" &&
+                        parseFloat(raw) === leaders[col.key]));
 
                   return (
-                    <td key={col.key} className="px-4 py-2 whitespace-nowrap">
+                    <td
+                      key={col.key}
+                      className={`px-4 py-2 whitespace-nowrap ${
+                        isLeader ? "text-purple-400 font-bold" : ""
+                      }`}
+                    >
                       {val}
                     </td>
                   );

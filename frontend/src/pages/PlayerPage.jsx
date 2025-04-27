@@ -5,7 +5,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PlayerName from "../components/PlayerName";
 import PlayerStatChart from "../components/PlayerStatChart";
-import GameLogChart from "../components/GameLogChart";
 import Divider from "../components/Divider";
 import { motion } from "framer-motion";
 import AwardsSummary from "../components/AwardsSummary";
@@ -109,8 +108,7 @@ const PlayerPage = () => {
           <PlayerName bio={playerBio} />
           <Divider />
           <div className="flex flex-col items-center gap-4 mt-6 mb-8">
-            <h1 className="text-2xl font-bold text-center">Awards Summary</h1>
-            <AwardsSummary bbrefId={bbrefId} />
+            <AwardsSummary playerId={id} />
           </div>
         </motion.div>
 
@@ -134,17 +132,6 @@ const PlayerPage = () => {
         >
           <h1 className="text-2xl font-bold mb-4">Career Graph</h1>
           <PlayerStatChart data={stats} />
-        </motion.div>
-
-        <Divider />
-
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <h1 className="text-2xl font-bold mb-4">Season Graph</h1>
-          <GameLogChart playerId={id} careerStats={stats} />
         </motion.div>
 
         <Divider />
